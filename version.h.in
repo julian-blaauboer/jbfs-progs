@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (C) 2021 Julian Blaauboer
+
 #ifndef JBFS_PROGS_VERSION_H
 #define JBFS_PROGS_VERSION_H
 

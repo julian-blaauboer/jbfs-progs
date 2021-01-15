@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (C) 2021 Julian Blaauboer
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
