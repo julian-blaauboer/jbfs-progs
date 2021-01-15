@@ -292,6 +292,7 @@ int format(const char *dev, const struct parameters *params)
 		if (params->group_size * (params->groups - 1) + min_group_size >
 		    blocks - sb_blocks) {
 			reason = "Too many groups";
+			errno = ENOSPC;
 			goto out_no_mem;
 		} else {
 			groups = params->groups;
