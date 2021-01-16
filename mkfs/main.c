@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
 #include <unistd.h>
@@ -383,7 +384,7 @@ int format(const char *dev, const struct parameters *params)
 	return 0;
 }
 
-void version()
+void version(void)
 {
 	printf("mkfs.jbfs (jbfs-tools v" VERSION ")\n");
 }
@@ -498,7 +499,7 @@ int main(int argc, char **argv)
 
 	/* If there are no positional arguments, print version and help */
 	if (optind >= argc) {
-		version(name);
+		version();
 		printf("\n");
 		usage(name);
 		return 0;
