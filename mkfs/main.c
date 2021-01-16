@@ -408,7 +408,8 @@ void int_from_opt(const char *name, unsigned int *num, const char *desc, int b)
 {
 	char *end;
 	*num = strtoul(optarg, &end, b);
-	if (!optarg[0] || isspace(optarg[0]) || *end || errno) {
+	if (!optarg[0] || isspace(optarg[0]) || optarg[0] == '-' ||
+	    *end || errno) {
 		printf("%s: invalid %s '%s'\n\n", name, desc, optarg);
 		usage(name);
 		exit(1);
