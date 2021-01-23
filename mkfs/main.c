@@ -393,10 +393,10 @@ void usage(const char *name)
 {
 	printf("Usage: %s [options] dev [ dev ... ]\n", name);
 	printf("Options:\n");
-	printf("  -b|--block-size SIZE       set block size (default=4096)\n");
-	printf("  -I|--inodes-per-group NUM  set number of inodes per group (default=4096)\n");
-	printf("  -g|--blocks-per-group NUM  set number of blocks per group (default=65536)\n");
+	printf("  -b|--block-size SIZE       set block size in bytes (default=4096)\n");
+	printf("  -g|--group-size SIZE       set group size in blocks (default=65536)\n");
 	printf("  -G|--groups NUM            set number of groups, or 0 for automatic (default=0)\n");
+	printf("  -I|--inodes-per-group NUM  set number of inodes per group (default=4096)\n");
 	printf("  -m|--mode OOO              set mode for root directory (default=755)\n");
 	printf("  --uid ID                   set UID for root directory (default=0)\n");
 	printf("  --gid ID                   set GID for root directory (default=0)\n");
@@ -442,7 +442,7 @@ int main(int argc, char **argv)
 	struct option long_options[] = {
 		{"block-size", required_argument, NULL, 'b'},
 		{"inodes-per-group", required_argument, NULL, 'I'},
-		{"blocks-per-group", required_argument, NULL, 'g'},
+		{"group-size", required_argument, NULL, 'g'},
 		{"groups", required_argument, NULL, 'G'},
 		{"mode", required_argument, NULL, 'm'},
 		{"uid", required_argument, NULL, 1000},
@@ -463,7 +463,7 @@ int main(int argc, char **argv)
 			int_from_opt(name, &params.group_inodes, "number of inodes per group", 0);
 			break;
 		case 'g':
-			int_from_opt(name, &params.group_size, "number of blocks per group", 0);
+			int_from_opt(name, &params.group_size, "group size", 0);
 			break;
 		case 'G':
 			int_from_opt(name, &params.groups, "number of groups", 0);
@@ -472,10 +472,10 @@ int main(int argc, char **argv)
 			int_from_opt(name, &params.root_mode, "root mode", 8);
 			break;
 		case 1000:
-			int_from_opt(name, &params.root_uid, "root uid", 0);
+			int_from_opt(name, &params.root_uid, "root UID", 0);
 			break;
 		case 1001:
-			int_from_opt(name, &params.root_gid, "root gid", 0);
+			int_from_opt(name, &params.root_gid, "root GID", 0);
 			break;
 		case 'F':
 			if (parse_flag(&params.flags, optarg) == -1) {
