@@ -104,6 +104,7 @@ void write_sb(uint8_t *block, const struct parameters *params,
 	sb->s_offset_data = sb->s_offset_refmap + sizes->refmap;
 	memcpy(sb->s_label, params->label, sizeof(sb->s_label));
 	memcpy(sb->s_uuid, params->uuid, sizeof(sb->s_uuid));
+	sb->s_default_root = 1;
 	sb->s_checksum = 0;
 }
 
