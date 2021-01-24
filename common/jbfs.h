@@ -22,6 +22,8 @@ struct jbfs_super_block {
 	uint32_t s_offset_inodes;
 	uint32_t s_offset_refmap;
 	uint32_t s_offset_data;
+	uint8_t  s_label[48];
+	uint8_t  s_uuid[16];
 	uint32_t s_checksum;
 } __attribute__((packed));
 

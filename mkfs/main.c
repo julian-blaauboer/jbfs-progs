@@ -12,6 +12,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <getopt.h>
+#include <uuid/uuid.h>
 
 #include "common/jbfs.h"
 #include "version.h"
@@ -25,6 +26,8 @@ struct parameters {
 	unsigned int root_mode;
 	unsigned int root_uid;
 	unsigned int root_gid;
+	uint8_t label[48];
+	uuid_t uuid;
 };
 
 struct sizes {
@@ -99,6 +102,8 @@ void write_sb(uint8_t *block, const struct parameters *params,
 	sb->s_offset_inodes = 1 + sizes->bitmap;
 	sb->s_offset_refmap = sb->s_offset_inodes + sizes->inodes;
 	sb->s_offset_data = sb->s_offset_refmap + sizes->refmap;
+	memcpy(sb->s_label, params->label, sizeof(sb->s_label));
+	memcpy(sb->s_uuid, params->uuid, sizeof(sb->s_uuid));
 	sb->s_checksum = 0;
 }
 
@@ -391,12 +396,14 @@ void version(void)
 
 void usage(const char *name)
 {
-	printf("Usage: %s [options] dev [ dev ... ]\n", name);
+	printf("Usage: %s [options] dev\n", name);
 	printf("Options:\n");
 	printf("  -b|--block-size SIZE       set block size in bytes (default=4096)\n");
 	printf("  -g|--group-size SIZE       set group size in blocks (default=65536)\n");
 	printf("  -G|--groups NUM            set number of groups, or 0 for automatic (default=0)\n");
 	printf("  -I|--inodes-per-group NUM  set number of inodes per group (default=4096)\n");
+	printf("  -L|--label LABEL           set label of filesystem\n");
+	printf("  -U|--uuid UUID             set UUID of filesystem\n");
 	printf("  -m|--mode OOO              set mode for root directory (default=755)\n");
 	printf("  --uid ID                   set UID for root directory (default=0)\n");
 	printf("  --gid ID                   set GID for root directory (default=0)\n");
@@ -430,6 +437,7 @@ int main(int argc, char **argv)
 	char *end;
 	int c;
 
+	uuid_generate(params.uuid);
 	params.block_size = 4096;
 	params.group_size = 65536;
 	params.group_inodes = 4096;
@@ -439,11 +447,15 @@ int main(int argc, char **argv)
 	params.root_gid = 0;
 	params.flags = 0;
 
+	memset(params.label, 0, 16);
+
 	struct option long_options[] = {
 		{"block-size", required_argument, NULL, 'b'},
 		{"inodes-per-group", required_argument, NULL, 'I'},
 		{"group-size", required_argument, NULL, 'g'},
 		{"groups", required_argument, NULL, 'G'},
+		{"label", required_argument, NULL, 'L'},
+		{"uuid", required_argument, NULL, 'U'},
 		{"mode", required_argument, NULL, 'm'},
 		{"uid", required_argument, NULL, 1000},
 		{"gid", required_argument, NULL, 1001},
@@ -454,7 +466,7 @@ int main(int argc, char **argv)
 	};
 
 	/* Parse options */
-	while ((c = getopt_long(argc, argv, "b:I:g:G:m:F:hV", long_options, NULL)) != -1) {
+	while ((c = getopt_long(argc, argv, "b:I:g:G:L:U:m:F:hV", long_options, NULL)) != -1) {
 		switch (c) {
 		case 'b':
 			int_from_opt(name, &params.block_size, "block size", 0);
@@ -467,6 +479,21 @@ int main(int argc, char **argv)
 			break;
 		case 'G':
 			int_from_opt(name, &params.groups, "number of groups", 0);
+			break;
+		case 'L':
+			if (strnlen(optarg, 48 + 2) > 48) {
+				printf("%s: label too long '%s'\n\n", name, optarg);
+				usage(name);
+				return 1;
+			}
+			strncpy(params.label, optarg, 48);
+			break;
+		case 'U':
+			if (uuid_parse(optarg, params.uuid) == -1) {
+				printf("%s: invalid UUID '%s'\n\n", name, optarg);
+				usage(name);
+				return 1;
+			}
 			break;
 		case 'm':
 			int_from_opt(name, &params.root_mode, "root mode", 8);
@@ -505,11 +532,13 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	/* Format all devices given */
-	for (; optind < argc; ++optind) {
-		if (format(argv[optind], &params) == -1)
-			perror(argv[optind]);
-	}
+	/*
+	 * I haven't decided how to handle labels/UUIDs with multiple
+	 * devices yet. For now, I've simply limited mkfs.jbfs to format
+	 * only one device at a time.
+	 */
+	if (format(argv[optind], &params) == -1)
+		perror(argv[optind]);
 
 	return 0;
 }

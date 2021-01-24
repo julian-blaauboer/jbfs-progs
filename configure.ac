@@ -1,5 +1,5 @@
 AC_PREREQ([2.70])
-AC_INIT([jbfs-progs], [0.1.0], [julian.blaauboer@gmail.com])
+AC_INIT([jbfs-progs], [0.2.0-alpha], [julian.blaauboer@gmail.com])
 AC_CONFIG_SRCDIR([common/jbfs.h])
 AC_CONFIG_HEADERS([config.h])
 
