@@ -196,9 +196,9 @@ int create_root_dir(int fd, uint8_t *block, const struct parameters *params,
 		inode->i_extents[i][0] = 0;
 		inode->i_extents[i][1] = 0;
 	}
-	inode->i_extents[0][0] = inode->i_extents[0][1] =
-	    (params->block_size == 1024) +
-	    2 + sizes->bitmap + sizes->inodes + sizes->refmap;
+	inode->i_extents[0][0] = (params->block_size == 1024) + 2 +
+	                         sizes->bitmap + sizes->inodes + sizes->refmap;
+	inode->i_extents[0][1] = inode->i_extents[0][0] + 1;
 	inode->i_cont = 0;
 
 	if (write_full(fd, block, params->block_size) == -1)
