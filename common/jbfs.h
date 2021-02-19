@@ -25,6 +25,8 @@ struct jbfs_super_block {
 	uint8_t  s_label[48];
 	uint8_t  s_uuid[16];
 	uint64_t s_default_root;
+	uint64_t s_free_blocks;
+	uint64_t s_free_inodes;
 	uint32_t s_checksum;
 } __attribute__((packed));
 

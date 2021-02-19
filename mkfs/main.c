@@ -105,6 +105,8 @@ void write_sb(uint8_t *block, const struct parameters *params,
 	memcpy(sb->s_label, params->label, sizeof(sb->s_label));
 	memcpy(sb->s_uuid, params->uuid, sizeof(sb->s_uuid));
 	sb->s_default_root = 1;
+	sb->s_free_blocks = data_blocks - 2 - offset - groups * (sizes->bitmap + sizes->inodes + sizes->refmap + 1);
+	sb->s_free_inodes = groups * params->group_inodes - 1;
 	sb->s_checksum = 0;
 }
 
@@ -288,6 +290,8 @@ int format(const char *dev, const struct parameters *params)
 	sb_blocks = 1024 / params->block_size + 1;
 	blocks = size / params->block_size;
 
+	data_blocks = blocks;
+
 	if (blocks < sb_blocks + min_group_size + 1) {
 		reason = "Not enough blocks";
 		errno = ENOSPC;
@@ -331,12 +335,6 @@ int format(const char *dev, const struct parameters *params)
 	for (group = 0; group < groups; ++group) {
 		unsigned i, zblocks;
 
-		if (blocks < params->group_size) {
-			sizes.data = blocks;
-			while (calculate_group_size(params, &sizes) > blocks)
-				--sizes.data;
-		}
-
 		write_gd(block, params, &sizes);
 		if (write_full(fd, block, params->block_size) == -1) {
 			reason = "Writing group descriptor failed";
@@ -358,7 +356,6 @@ int format(const char *dev, const struct parameters *params)
 		}
 
 		blocks -= params->group_size;
-		data_blocks += sizes.data;
 	}
 
 	/* Write out super */
